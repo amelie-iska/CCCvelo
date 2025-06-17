@@ -21,11 +21,12 @@ CCCvelo Project Structure
   MODEL_DIR = "./results2/trained_model/"
   TG_PRED_DIR = "./results2/tg_prediction/"
   LOSS_DIR = "./results2/loss_curves/"
-   VISUALIZE_DIR = './results2/visualize/'
+  VISUALIZE_DIR = './results2/visualize/'
 
 
 
 # This loads the expression matrix, metadata, and spatial coordinates into an AnnData object.
+```
 input_dir = os.path.join(DATA_DIR, "your_project_name")
 print("Loading data...")
 data_files = {
@@ -36,7 +37,7 @@ data_files = {
 }
 paths = {key: os.path.join(input_dir, fname) for key, fname in data_files.items()}
 adata = ReadData(**paths)
-
+```
 # Step 2: Constructing Multilayer Network
 
 # (1) load candidate ligands, receptors, and feature genes
