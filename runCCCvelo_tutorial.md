@@ -13,7 +13,7 @@ Before running CCCvelo, using 1_select_LRTG.R function to select candidate ligan
  TGs_list.json # Candidate Target Genes
 ```
 
-# step2: Load Input Data
+### step2: Load Input Data
 
 Setting the global path
 ```
@@ -24,7 +24,7 @@ TG_PRED_DIR = "./results2/tg_prediction/"
 LOSS_DIR = "./results2/loss_curves/"
 VISUALIZE_DIR = './results2/visualize/'
 ```
-# This loads the expression matrix, metadata, and spatial coordinates into an AnnData object.
+### This loads the expression matrix, metadata, and spatial coordinates into an AnnData object.
 ```
 input_dir = os.path.join(DATA_DIR, "your_project_name")
 print("Loading data...")
@@ -37,7 +37,7 @@ data_files = {
 paths = {key: os.path.join(input_dir, fname) for key, fname in data_files.items()}
 adata = ReadData(**paths)
 ```
-# Step 2: Constructing Multilayer Network
+### Step 2: Constructing Multilayer Network
 
 (1) load candidate ligands, receptors, and feature genes
 ```
@@ -71,7 +71,7 @@ ex_mulnetlist = {
 print("Multilayer network nodes summary:")
 print(summarize_multilayer_network(ex_mulnetlist))
 ```
-# step3: Computes signaling scores for each LR–TF path using predefined ligand–receptor databases, where ligand–receptor databases contain diffusion-based LR database and contact-based LR database.
+### step3: Computes signaling scores for each LR–TF path using predefined ligand–receptor databases, where ligand–receptor databases contain diffusion-based LR database and contact-based LR database.
 ```
 loop_calculate_LRTF_allscore(
     adata=adata,
@@ -95,7 +95,7 @@ save_LRscore_and_MLnet(
     save_path=MLNET_DIR
 )
 ```
-# step4: prepare CCCvelo input, including loading linkage files (LR pairs, TF-TG linkages, score matrix) and filtering cells belonging to the recipient cluster.
+### step4: prepare CCCvelo input, including loading linkage files (LR pairs, TF-TG linkages, score matrix) and filtering cells belonging to the recipient cluster.
 
 (1) filtering cells belonging to the recipient cluster
 ```
@@ -123,7 +123,7 @@ adata = PrepareInputData(adata, **paths)
 adata.uns['Cluster_colors'] = ["#DAA0B0", "#908899", "#9D5A38"]
 torch.save(adata, os.path.join(MLNET_DIR, "pp_adata.pt"))
 ```
-# step 5: select root cell and train CCCvelo model
+### step 5: select root cell and train CCCvelo model
 
 identify root cell
 ```
@@ -158,7 +158,7 @@ else:
     iteration_adam, loss_adam = model.train(n_epochs)
 adata.write_h5ad(os.path.join(MODEL_DIR, 'adata_pyinput.h5ad'))
 ```
-# step5: plots predicted TG dynamics, spatial velocity streamline and saves trained model and velocity-augmented AnnData
+### step6: plots predicted TG dynamics, spatial velocity streamline and saves trained model and velocity-augmented AnnData
 ```
 adata_copy = adata[:, adata.var['TGs'].astype(bool)]
 adata_velo = get_raw_velo(adata_copy, model)
