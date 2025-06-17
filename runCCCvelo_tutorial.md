@@ -1,6 +1,6 @@
 CCCvelo Project Structure
 
-# step1: data preparing
+## step1: data preparing
 
 Before running CCCvelo, using 1_select_LRTG.R function to select candidate ligands, receptors, and feature genes from the expression data, and then save the result into the input files under the path Input/your_project_name/. The input files include:
 ```
