@@ -1,13 +1,13 @@
 CCCvelo Project Structure
 
-project_root/
-├── data/processed/                 # Preprocessed spatial data
-├── results2/
-│   ├── mlnet/                      # Multilayer network outputs
-│   ├── trained_model/             # Trained velocity models
-│   ├── tg_prediction/             # TG expression prediction results
-│   ├── loss_curves/               # Training loss curves
-│   └── visualize/                 # Visualization results
+project_root/ //
+├── data/processed/                  # Preprocessed spatial data //
+├── results2/ //
+│   ├── mlnet/                      # Multilayer network outputs //
+│   ├── trained_model/             # Trained velocity models // 
+│   ├── tg_prediction/             # TG expression prediction results //
+│   ├── loss_curves/               # Training loss curves //
+│   └── visualize/                 # Visualization results //
 
 # stpe1: data preparing
 
@@ -24,12 +24,15 @@ TGs_list.json # Candidate Target Genes
 # step2: Load Input Data
 
 # Setting the global path
+'''
 DATA_DIR = "./data/processed/"
 MLNET_DIR = "./results2/mlnet/"
 MODEL_DIR = "./results2/trained_model/"
 TG_PRED_DIR = "./results2/tg_prediction/"
 LOSS_DIR = "./results2/loss_curves/"
 VISUALIZE_DIR = './results2/visualize/'
+'''
+
 
 # This loads the expression matrix, metadata, and spatial coordinates into an AnnData object.
 input_dir = os.path.join(DATA_DIR, "your_project_name")
