@@ -4,25 +4,25 @@ CCCvelo Project Structure
 
 # Before running CCCvelo, using 1_select_LRTG.R function to select candidate ligands, receptors, and feature genes from the expression data, and then save the result into the input files under the path Input/your_project_name/. The input files include:
 
-raw_expression_mtx.csv # Raw expression matrix (cells × genes)
-cell_meta.csv # Cell meta information (Cluster annotations)
-cell_location.csv # Cell spatial coordinates
-Databases.json # Ligand-Receptor-TF database
-Ligs_list.json # Candidate Ligands
-Recs_list.json # Candidate Receptors
-TGs_list.json # Candidate Target Genes
+ raw_expression_mtx.csv # Raw expression matrix (cells × genes)
+ cell_meta.csv # Cell meta information (Cluster annotations)
+ cell_location.csv # Cell spatial coordinates
+ Databases.json # Ligand-Receptor-TF database
+ Ligs_list.json # Candidate Ligands
+ Recs_list.json # Candidate Receptors
+ TGs_list.json # Candidate Target Genes
 
 # step2: Load Input Data
 
 # Setting the global path
-'''
-DATA_DIR = "./data/processed/"
-MLNET_DIR = "./results2/mlnet/"
-MODEL_DIR = "./results2/trained_model/"
-TG_PRED_DIR = "./results2/tg_prediction/"
-LOSS_DIR = "./results2/loss_curves/"
-VISUALIZE_DIR = './results2/visualize/'
-'''
+
+  DATA_DIR = "./data/processed/"
+  MLNET_DIR = "./results2/mlnet/"
+  MODEL_DIR = "./results2/trained_model/"
+  TG_PRED_DIR = "./results2/tg_prediction/"
+  LOSS_DIR = "./results2/loss_curves/"
+   VISUALIZE_DIR = './results2/visualize/'
+
 
 
 # This loads the expression matrix, metadata, and spatial coordinates into an AnnData object.
