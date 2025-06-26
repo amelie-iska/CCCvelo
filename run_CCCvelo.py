@@ -15,7 +15,7 @@ from models2.Input_prepare import *
 from models2.calculateLRscore import *
 from models2.utils import *
 
-# 全局路径
+# Global Path
 DATA_DIR = "./data/processed/"
 MLNET_DIR = "./results2/mlnet/"
 MODEL_DIR = "./results2/trained_model/"
@@ -183,7 +183,7 @@ if __name__ == "__main__":
     np.random.seed(seed)  
     start_time = time.time()
     process = psutil.Process(os.getpid())
-    before_memory = process.memory_info().rss / 1024 ** 2  # 转换为 MB
+    before_memory = process.memory_info().rss / 1024 ** 2 
 
     main(
         seed,
