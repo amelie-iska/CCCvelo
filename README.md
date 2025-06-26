@@ -35,7 +35,7 @@ anndata             0.9.2  <br>
 
  Please install the corresponding version of the package according to the environment provided above, then the package CCCvelo can be directly downloaded for usage.
 
-# Step1: Data Preparation
+# Data Preparation
 
 Before running CCCvelo, you need using `select_LRTG.R` function to select candidate ligands, receptors, and feature genes from the expression data, and then save the result into the input files under the path `Input/your_project_name/`. The input files include:
 
