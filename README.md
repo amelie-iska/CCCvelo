@@ -67,7 +67,7 @@ The output files (trained model, velocity vectors, processed AnnData) will be sa
 # Using CCCvelo
 To apply CCCvelo to any other ST datasets:
 
-you can define a personalized name for the dataset, and follow the 'CCCvelo_turtorial.md' to analysis your dataset.
+you can define a personalized name for the dataset, and follow the `CCCvelo_turtorial.md` to analysis your dataset.
 
 
 
