@@ -5,7 +5,7 @@
 ```
 CCCvelo/
 ├── data/processed/         # Preprocessed spatial data
-└── results2/
+└── results/
     ├── mlnet/              # Multilayer network outputs
     ├── trained_model/      # Trained velocity models
     ├── tg_prediction/      # TG expression prediction results
@@ -18,7 +18,7 @@ CCCvelo/
 
 ### Step 1: Data Preparation
 
-Before running CCCvelo, use the script `1_select_LRTG.R` to extract candidate ligands, receptors, and target genes from expression data.
+Before running CCCvelo, use the script `select_LRTG.R` to extract candidate ligands, receptors, and target genes from expression data.
 The resulting files should be saved under `Input/your_project_name/`:
 ```
 Input/your_project_name/
