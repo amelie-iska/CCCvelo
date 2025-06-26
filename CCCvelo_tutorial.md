@@ -195,7 +195,6 @@ adata_spa = adata_velo.copy()
 plot_velocity_streamline(adata_spa, basis='spatial', vkey='velocity', xkey='Imputate', root_key=False, density=2,
                             smooth=0.5, cutoff_perc=0, plt_path=VISUALIZE_DIR, save_name='v0')
 
-
 save_model_and_data(model, adata_velo, MODEL_DIR)
 
 print("Pipeline finished successfully!")
