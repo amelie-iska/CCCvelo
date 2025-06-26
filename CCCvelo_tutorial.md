@@ -1,13 +1,15 @@
-CCCvelo Project Structure
+# CCCvelo: A Framework for Inferring Dynamic Cell–Cell Communication in Spatial Transcriptomics
 
-project_root/
-├── data/processed/                 # Preprocessed spatial data
+## 📁 Project Structure
+
+CCCvelo/
+├── data/processed/ # Preprocessed spatial data
 ├── results2/
-│   ├── mlnet/                      # Multilayer network outputs
-│   ├── trained_model/             # Trained velocity models
-│   ├── tg_prediction/             # TG expression prediction results
-│   ├── loss_curves/               # Training loss curves
-│   └── visualize/                 # Visualization results
+│ ├── mlnet/ # Multilayer network outputs
+│ ├── trained_model/ # Trained velocity models
+│ ├── tg_prediction/ # TG expression prediction results
+│ ├── loss_curves/ # Training loss curves
+│ └── visualize/ # Visualization results
 
 # stpe1: data preparing
 
