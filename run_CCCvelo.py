@@ -124,7 +124,7 @@ def main(
     print('Loading link files from:', paths)
 
     adata = PrepareInputData(adata, **paths)
-    adata.uns['Cluster_colors'] = ["#DAA0B0", "#908899", "#9D5A38"]
+    # adata.uns['Cluster_colors'] = ["#DAA0B0", "#908899", "#9D5A38"]
 
     torch.save(adata, os.path.join(MLNET_DIR, "pp_adata.pt"))
 
@@ -188,6 +188,7 @@ if __name__ == "__main__":
 
     main(
         seed,
+        dataset_name='humanprostate,
         rec_clusters=['E.state tumor', 'ICS.state tumor', 'M.state tumor'],
         hidden_dims=[200, 200, 200],
         batch_size=1500,
