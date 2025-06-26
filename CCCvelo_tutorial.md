@@ -33,7 +33,7 @@ Input/your_project_name/
 
 ### Step 2: Load Input Data
 
-```python
+```
 # Set global paths
 DATA_DIR = "./data/processed/"
 input_dir = os.path.join(DATA_DIR, "your_project_name")
@@ -59,10 +59,10 @@ data_files = {
 }
 paths = {key: os.path.join(input_dir, fname) for key, fname in data_files.items()}
 adata = ReadData(**paths)
-```python
+```
 
 ### Step 3: Construct Multilayer Network
-```python
+```
 # (1) load candidate ligands, receptors, and feature genes
 print("Loading database...")
 TGs_list = load_json(os.path.join(input_dir, "TGs_list.json")) # feature genes
