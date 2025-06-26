@@ -35,7 +35,7 @@ anndata             0.9.2  <br>
 
  Please install the corresponding version of the package according to the environment provided above, then the package CCCvelo can be directly downloaded for usage.
 
-# Data Preparation
+# Data Preparing
 
 Before running CCCvelo, you need using `select_LRTG.R` function to select candidate ligands, receptors, and feature genes from the expression data, and then save the result into the input files under the path `Input/your_project_name/`. The input files include:
 
@@ -63,6 +63,12 @@ Then run
     python run_CCCvelo.py
 
 The output files (trained model, velocity vectors, processed AnnData) will be saved under `Output/your_project_name/`.
+
+# Using CCCvelo
+To apply CCCvelo to any other ST datasets:
+
+you can define a personalized name for the dataset, and follow the 'CCCvelo_turtorial.md' to analysis your dataset.
+
 
 
 
