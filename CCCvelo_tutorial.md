@@ -92,10 +92,10 @@ ex_mulnetlist = {
 
 print("Multilayer network nodes summary:")
 print(summarize_multilayer_network(ex_mulnetlist))
-```python
+```
 
 ### Step4: Calculate LR–TF Signaling Scores, where ligand–receptor databases contain diffusion-based LR database and contact-based LR database.
-```python
+```
 loop_calculate_LRTF_allscore(
     adata=adata,
     ex_mulnetlist=ex_mulnetlist,
@@ -116,11 +116,11 @@ save_LRscore_and_MLnet(
     TFLR_all_score=TFLR_all_score,
     save_path=MLNET_DIR
 )
-```python
+```
 
 ### Step5: Prepare CCCvelo Input, including loading linkage files (LR pairs, TF-TG linkages, score matrix) and filtering cells belonging to the recipient cluster.
 
-```python
+```
 #  filtering cells belonging to the recipient cluster
 print("Selecting receiver cells...")
 celltype_ls = adata.obs['Cluster'].to_list()
@@ -143,10 +143,10 @@ print('Loading link files from:', paths)
 adata = PrepareInputData(adata, **paths)
 adata.uns['Cluster_colors'] = ["#DAA0B0", "#908899", "#9D5A38"]
 torch.save(adata, os.path.join(MLNET_DIR, "pp_adata.pt"))
-```python
+```
 
 ### Step 6: Train CCCvelo Model
-```python
+```
 # identify root cell
 adata = root_cell(adata, select_root='UMAP')
 
@@ -181,12 +181,11 @@ else:
     model = SpatialVelocity(*data, lr=learning_rate, Lambda=lambda_reg, batch_size=batch_size)
     iteration_adam, loss_adam = model.train(n_epochs)
 
-
 adata.write_h5ad(os.path.join(MODEL_DIR, 'adata_pyinput.h5ad'))
-```python
+```
 
 ### Step7: Visualization and Save Results
-```python
+```
 adata_copy = adata[:, adata.var['TGs'].astype(bool)]
 adata_velo = get_raw_velo(adata_copy, model)
 plot_gene_dynamic(adata_velo, model, VISUALIZE_DIR)
@@ -200,5 +199,5 @@ plot_velocity_streamline(adata_spa, basis='spatial', vkey='velocity', xkey='Impu
 save_model_and_data(model, adata_velo, MODEL_DIR)
 
 print("Pipeline finished successfully!")
-```python
+```
 
