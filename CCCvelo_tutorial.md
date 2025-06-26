@@ -2,14 +2,17 @@
 
 ## Project Structure
 
+```
 CCCvelo/
-├── data/processed/ # Preprocessed spatial data
-├── results2/
-│ ├── mlnet/ # Multilayer network outputs
-│ ├── trained_model/ # Trained velocity models
-│ ├── tg_prediction/ # TG expression prediction results
-│ ├── loss_curves/ # Training loss curves
-│ └── visualize/ # Visualization results
+├── data/processed/         # Preprocessed spatial data
+└── results2/
+    ├── mlnet/              # Multilayer network outputs
+    ├── trained_model/      # Trained velocity models
+    ├── tg_prediction/      # TG expression prediction results
+    ├── loss_curves/        # Training loss curves
+    └── visualize/          # Visualization results
+```
+
 
 ## Pipeline Steps
 
