@@ -19,13 +19,14 @@ Before running CCCvelo, use the script `1_select_LRTG.R` to extract candidate li
 
 The resulting files should be saved under `Input/your_project_name/`:
 
-raw_expression_mtx.csv # Raw expression matrix (cells × genes)
-cell_meta.csv # Cell meta information (Cluster annotations)
-cell_location.csv # Cell spatial coordinates
-Databases.json # Ligand-Receptor-TF database
-Ligs_list.json # Candidate Ligands
-Recs_list.json # Candidate Receptors
-TGs_list.json # Candidate Target Genes
+Input/your_project_name/
+├── raw_expression_mtx.csv # Raw expression matrix (cells × genes)
+├── cell_meta.csv # Cell meta information (Cluster annotations)
+├── cell_location.csv # Cell spatial coordinates
+├── Databases.json # Ligand-Receptor-TF database
+├── Ligs_list.json # Candidate Ligands
+├── Recs_list.json # Candidate Receptors
+├── TGs_list.json # Candidate Target Genes
 
 # step2: Load Input Data
 
