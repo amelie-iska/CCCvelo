@@ -10,18 +10,18 @@ import pandas as pd
 import scanpy as sc
 from scipy.spatial.distance import pdist, squareform
 
-from models2.runMLnet import *
-from models2.Input_prepare import *
-from models2.calculateLRscore import *
-from models2.utils import *
+from models.runMLnet import *
+from models.Input_prepare import *
+from models.calculateLRscore import *
+from models.utils import *
 
 # Global Path
 DATA_DIR = "./data/processed/"
-MLNET_DIR = "./results2/mlnet/"
-MODEL_DIR = "./results2/trained_model/"
-TG_PRED_DIR = "./results2/tg_prediction/"
-LOSS_DIR = "./results2/loss_curves/"
-VISUALIZE_DIR = './results2/visualize/'
+MLNET_DIR = "./results/mlnet/"
+MODEL_DIR = "./results/trained_model/"
+TG_PRED_DIR = "./results/tg_prediction/"
+LOSS_DIR = "./results/loss_curves/"
+VISUALIZE_DIR = './results/visualize/'
 
 for dir_path in [DATA_DIR, MODEL_DIR, MLNET_DIR, TG_PRED_DIR, LOSS_DIR, VISUALIZE_DIR]:
     os.makedirs(dir_path, exist_ok=True)
