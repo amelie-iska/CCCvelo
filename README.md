@@ -58,7 +58,7 @@ Edit run_CCCvelo.py if needed to set:
 * project_name (your input folder name) <br>
 * hyperparameters, includes `batch_size`, `hidden_dims`, `n_epochs`, `learning_rate`, etc. <br>
 
-The run
+Then run
 
     python run_CCCvelo.py
 
