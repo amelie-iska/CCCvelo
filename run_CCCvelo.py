@@ -30,6 +30,7 @@ for dir_path in [DATA_DIR, MODEL_DIR, MLNET_DIR, TG_PRED_DIR, LOSS_DIR, VISUALIZ
 
 def main(
     seed,
+    dataset_name,
     rec_clusters=None,
     hidden_dims=[200, 200, 200],
     batch_size=1500,
@@ -40,7 +41,7 @@ def main(
     # if rec_clusters is None:
     #     rec_clusters = ['E.state tumor', 'ICS.state tumor', 'M.state tumor']
 
-    input_dir = os.path.join(DATA_DIR, "humanprostate")
+    input_dir = os.path.join(DATA_DIR, dataset)
 
     print("Loading data...")
     data_files = {
