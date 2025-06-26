@@ -19,9 +19,8 @@ CCCvelo/
 ### Step 1: Data Preparation
 
 Before running CCCvelo, use the script `1_select_LRTG.R` to extract candidate ligands, receptors, and target genes from expression data.
-
 The resulting files should be saved under `Input/your_project_name/`:
-
+```
 Input/your_project_name/
 ├── raw_expression_mtx.csv # Raw expression matrix (cells × genes)
 ├── cell_meta.csv # Cell meta information (Cluster annotations)
@@ -30,16 +29,24 @@ Input/your_project_name/
 ├── Ligs_list.json # Candidate Ligands
 ├── Recs_list.json # Candidate Receptors
 ├── TGs_list.json # Candidate Target Genes
+```
 
-# step2: Load Input Data
+### Step 2: Load Input Data
 
-# Setting the global path
+```python
+# Set global paths
 DATA_DIR = "./data/processed/"
-MLNET_DIR = "./results2/mlnet/"
-MODEL_DIR = "./results2/trained_model/"
-TG_PRED_DIR = "./results2/tg_prediction/"
-LOSS_DIR = "./results2/loss_curves/"
-VISUALIZE_DIR = './results2/visualize/'
+input_dir = os.path.join(DATA_DIR, "your_project_name")
+
+# Load files
+data_files = {
+    'count_file': 'raw_expression_mtx.csv',
+    'imput_file': 'imputation_expression_mtx.csv',
+    'meta_file': 'cell_meta.csv',
+    'loca_file': 'cell_location.csv'
+}
+paths = {key: os.path.join(input_dir, fname) for key, fname in data_files.items()}
+adata = ReadData(**paths)
 
 # This loads the expression matrix, metadata, and spatial coordinates into an AnnData object.
 input_dir = os.path.join(DATA_DIR, "your_project_name")
