@@ -41,7 +41,7 @@ def main(
     # if rec_clusters is None:
     #     rec_clusters = ['E.state tumor', 'ICS.state tumor', 'M.state tumor']
 
-    input_dir = os.path.join(DATA_DIR, dataset)
+    input_dir = os.path.join(DATA_DIR, dataset_name)
 
     print("Loading data...")
     data_files = {
