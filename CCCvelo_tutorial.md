@@ -19,9 +19,9 @@ CCCvelo/
 ### Step 1: Data Preparation
 
 Before running CCCvelo, use the script `select_LRTG.R` to extract candidate ligands, receptors, and target genes from expression data.
-The resulting files should be saved under `Input/your_project_name/`:
+The resulting files should be saved under `data/processed/`:
 ```
-Input/your_project_name/
+data/processed/
 ├── raw_expression_mtx.csv # Raw expression matrix (cells × genes)
 ├── cell_meta.csv # Cell meta information (Cluster annotations)
 ├── cell_location.csv # Cell spatial coordinates
