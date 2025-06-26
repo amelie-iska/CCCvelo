@@ -37,7 +37,7 @@ anndata             0.9.2  <br>
 
 # Data preparing
 
-Before running CCCvelo, you need using `1_select_LRTG.R` function to select candidate ligands, receptors, and feature genes from the expression data, and then save the result into the input files under the path `Input/your_project_name/`. The input files include:
+Before running CCCvelo, you need using `select_LRTG.R` function to select candidate ligands, receptors, and feature genes from the expression data, and then save the result into the input files under the path `Input/your_project_name/`. The input files include:
 
 * raw_expression_mtx.csv # Raw expression matrix (cells × genes) <br>
 * cell_meta.csv # Cell meta information (Cluster annotations) <br>
