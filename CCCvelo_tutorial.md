@@ -1,6 +1,6 @@
 # CCCvelo: A Framework for Inferring Dynamic Cell–Cell Communication in Spatial Transcriptomics
 
-## 📁 Project Structure
+## Project Structure
 
 CCCvelo/
 ├── data/processed/ # Preprocessed spatial data
@@ -11,9 +11,18 @@ CCCvelo/
 │ ├── loss_curves/ # Training loss curves
 │ └── visualize/ # Visualization results
 
-# stpe1: data preparing
 
-# Before running CCCvelo, using 1_select_LRTG.R function to select candidate ligands, receptors, and feature genes from the expression data, and then save the result into the input files under the path Input/your_project_name/. The input files include:
+---
+
+## Pipeline Steps
+
+### Step 1: Data Preparation
+
+Before running CCCvelo, use the script `1_select_LRTG.R` to extract candidate ligands, receptors, and target genes from expression data.
+
+The resulting files should be saved under `Input/your_project_name/`:
+
+
 
 raw_expression_mtx.csv # Raw expression matrix (cells × genes)
 cell_meta.csv # Cell meta information (Cluster annotations)
