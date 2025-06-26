@@ -50,7 +50,7 @@ Input/your_project_name/
 ├── TGs_list.json # Candidate Target Genes
 ```
 
-# Training CCCvelo 
+# Running CCCvelo 
 
 Edit run_CCCvelo.py if needed to set:
 
