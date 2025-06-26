@@ -11,9 +11,6 @@ CCCvelo/
 │ ├── loss_curves/ # Training loss curves
 │ └── visualize/ # Visualization results
 
-
----
-
 ## Pipeline Steps
 
 ### Step 1: Data Preparation
@@ -21,8 +18,6 @@ CCCvelo/
 Before running CCCvelo, use the script `1_select_LRTG.R` to extract candidate ligands, receptors, and target genes from expression data.
 
 The resulting files should be saved under `Input/your_project_name/`:
-
-
 
 raw_expression_mtx.csv # Raw expression matrix (cells × genes)
 cell_meta.csv # Cell meta information (Cluster annotations)
