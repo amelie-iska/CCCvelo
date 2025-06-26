@@ -59,9 +59,10 @@ data_files = {
 }
 paths = {key: os.path.join(input_dir, fname) for key, fname in data_files.items()}
 adata = ReadData(**paths)
+```python
 
-# Step 2: Constructing Multilayer Network
-
+### Step 3: Construct Multilayer Network
+```python
 # (1) load candidate ligands, receptors, and feature genes
 print("Loading database...")
 TGs_list = load_json(os.path.join(input_dir, "TGs_list.json")) # feature genes
@@ -91,8 +92,10 @@ ex_mulnetlist = {
 
 print("Multilayer network nodes summary:")
 print(summarize_multilayer_network(ex_mulnetlist))
+```python
 
-# step3: Computes signaling scores for each LR–TF path using predefined ligand–receptor databases, where ligand–receptor databases contain diffusion-based LR database and contact-based LR database.
+### Step4: Calculate LR–TF Signaling Scores, where ligand–receptor databases contain diffusion-based LR database and contact-based LR database.
+```python
 loop_calculate_LRTF_allscore(
     adata=adata,
     ex_mulnetlist=ex_mulnetlist,
@@ -113,9 +116,11 @@ save_LRscore_and_MLnet(
     TFLR_all_score=TFLR_all_score,
     save_path=MLNET_DIR
 )
+```python
 
-# step4: prepare CCCvelo input, including loading linkage files (LR pairs, TF-TG linkages, score matrix) and filtering cells belonging to the recipient cluster.
+### Step5: Prepare CCCvelo Input, including loading linkage files (LR pairs, TF-TG linkages, score matrix) and filtering cells belonging to the recipient cluster.
 
+```python
 #  filtering cells belonging to the recipient cluster
 print("Selecting receiver cells...")
 celltype_ls = adata.obs['Cluster'].to_list()
@@ -138,9 +143,10 @@ print('Loading link files from:', paths)
 adata = PrepareInputData(adata, **paths)
 adata.uns['Cluster_colors'] = ["#DAA0B0", "#908899", "#9D5A38"]
 torch.save(adata, os.path.join(MLNET_DIR, "pp_adata.pt"))
+```python
 
-# step 5: select root cell and train CCCvelo model
-
+### Step 6: Train CCCvelo Model
+```python
 # identify root cell
 adata = root_cell(adata, select_root='UMAP')
 
@@ -177,8 +183,10 @@ else:
 
 
 adata.write_h5ad(os.path.join(MODEL_DIR, 'adata_pyinput.h5ad'))
+```python
 
-# step5: plots predicted TG dynamics, spatial velocity streamline and saves trained model and velocity-augmented AnnData
+### Step7: Visualization and Save Results
+```python
 adata_copy = adata[:, adata.var['TGs'].astype(bool)]
 adata_velo = get_raw_velo(adata_copy, model)
 plot_gene_dynamic(adata_velo, model, VISUALIZE_DIR)
@@ -192,4 +200,5 @@ plot_velocity_streamline(adata_spa, basis='spatial', vkey='velocity', xkey='Impu
 save_model_and_data(model, adata_velo, MODEL_DIR)
 
 print("Pipeline finished successfully!")
+```python
 
