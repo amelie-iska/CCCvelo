@@ -34,6 +34,8 @@ anndata             0.9.2  <br>
 
 # Usage
 
+The use of CCCvelo involves the following steps. 
+
 ## Installation
 
  Please install the corresponding version of the package according to the environment provided above, then the package CCCvelo can be directly downloaded for usage.
@@ -75,7 +77,7 @@ We here illustrate how to run CCCvelo using a demo dataset step-by-step.
 # Application of CCCvelo
 To apply CCCvelo to any other ST datasets:
 
-A detailed tutorial is provided in the `CCCvelo_turtorial.md`, and you can follow it step-by-step to analyze your dataset.
+A detailed tutorial is provided in the `CCCvelo_tutorial.md` (https://github.com/SunXQlab/CCCvelo/blob/main/CCCvelo_tutorial.md), and you can follow it step-by-step to analyze your dataset.
 
 
 
