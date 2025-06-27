@@ -64,11 +64,12 @@ Then run
 
 The output files (trained model, velocity vectors, processed AnnData) will be saved under `Output/your_project_name/`.
 
-# Using CCCvelo
+# Application of CCCvelo
 To apply CCCvelo to any other ST datasets:
 
 A detailed tutorial is provided in the `CCCvelo_turtorial.md`, and you can follow it step-by-step to analyze your dataset.
 
+# Demo
 
 
 
