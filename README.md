@@ -64,15 +64,15 @@ Then run
 
 The output files (trained model, velocity vectors, processed AnnData) will be saved under `Output/your_project_name/`.
 
+
+# Demo
+We here illustrate how to run CCCvelo using a demo dataset step-by-step. 
+
+
 # Application of CCCvelo
 To apply CCCvelo to any other ST datasets:
 
 A detailed tutorial is provided in the `CCCvelo_turtorial.md`, and you can follow it step-by-step to analyze your dataset.
-
-# Demo
-
-
-
 
 
 
