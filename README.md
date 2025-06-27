@@ -31,11 +31,14 @@ setuptools          68.2.0 <br>
 threadpoolctl       3.5.0 <br>
 torch               2.0.1 <br>
 anndata             0.9.2  <br>     
+
 # Usage
+
+## Installation
 
  Please install the corresponding version of the package according to the environment provided above, then the package CCCvelo can be directly downloaded for usage.
 
-# Data Preparing
+## Data Preparing
 
 Before running CCCvelo, you need using `select_LRTG.R` function to select candidate ligands, receptors, and feature genes from the expression data, and then save the result into the input files under the path `Input/your_project_name/`. The input files include:
 
@@ -50,7 +53,7 @@ Input/your_project_name/
 ├── TGs_list.json # Candidate Target Genes
 ```
 
-# Running CCCvelo 
+## Running CCCvelo 
 
 Edit run_CCCvelo.py if needed to set:
 
