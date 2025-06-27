@@ -40,7 +40,7 @@ The use of CCCvelo involves the following steps.
 
  Please install the corresponding version of the package according to the environment provided above, then the package CCCvelo can be directly downloaded for usage.
 
-## Data Preparing
+## Data Preparation
 
 Before running CCCvelo, you need using `select_LRTG.R` function to select candidate ligands, receptors, and feature genes from the expression data, and then save the result into the input files under the path `Input/your_project_name/`. The input files include:
 
