@@ -38,7 +38,12 @@ The use of CCCvelo involves the following steps.
 
 ## Installation
 
- Please install the corresponding version of the package according to the environment provided above, then the package CCCvelo can be directly downloaded for usage.
+Create a separate conda environment for version control and to avoid potential conflicts. Please install the corresponding version of the package according to the 'requirements.txt', then the package CCCvelo can be directly used.
+```
+conda create -n cccvelo python=3.8.10
+conda activate cccvelo
+pip install -r requirements.txt
+```
 
 ## Data Preparation
 
