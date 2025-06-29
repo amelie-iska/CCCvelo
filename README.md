@@ -47,10 +47,10 @@ pip install -r requirements.txt
 
 ## Data Preparation
 
-Before running CCCvelo, you need using `select_LRTG.R` function to select candidate ligands, receptors, and feature genes from the expression data, and then save the result into the input files under the path `Input/your_project_name/`. The input files include:
+Before running CCCvelo, you need using `select_LRTG.R` function to select candidate ligands, receptors, and feature genes from the expression data, and then save the result into the input files under the path `data/precessed/`. The input files include:
 
 ```
-Input/your_project_name/
+data/precessed/
 ├── raw_expression_mtx.csv # Raw expression matrix (cells × genes)
 ├── cell_meta.csv # Cell meta information (Cluster annotations)
 ├── cell_location.csv # Cell spatial coordinates
@@ -76,7 +76,10 @@ The output files (trained model, velocity vectors, processed AnnData) will be sa
 
 
 # Demo
-We here illustrate how to run CCCvelo using a demo dataset step-by-step. 
+
+We illustrate how to run CCCvelo using a demo dataset step-by-step in the 'Demo' file. The demo dataset can be download from https://www.dropbox.com/s/c5tu4drxda01m0u/mousebrain_bin60.h5ad?dl=0
+
+* ' <br>
 
 
 # Application of CCCvelo
