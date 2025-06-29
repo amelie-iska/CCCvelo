@@ -36,21 +36,6 @@ data/precessed/
 ├── TGs_list.json # Candidate Target Genes
 ```
 
-## Running CCCvelo 
-
-Edit run_CCCvelo.py if needed to set:
-
-* base_path (your project root path) <br>
-* project_name (your input folder name) <br>
-* hyperparameters, includes `batch_size`, `hidden_dims`, `n_epochs`, `learning_rate`, etc. <br>
-
-Then run
-
-    python run_CCCvelo.py
-
-The output files (trained model, velocity vectors, processed AnnData) will be saved under `Output/your_project_name/`.
-
-
 # Demo
 
 We provide a step-by-step demonstration of how to run CCCvelo using a sample dataset, available in the `Demo` directory. The demo dataset can be download from https://www.dropbox.com/s/c5tu4drxda01m0u/mousebrain_bin60.h5ad?dl=0
@@ -62,6 +47,7 @@ The demonstration includes the following files:
 * '2_runCCCvelo_on_MouseBrainCortex.ipynb' provides the full pipeline to run CCCvelo on the mouse cortex data <br>
 
 # Application of CCCvelo
+
 To apply CCCvelo to any other ST datasets:
 
 A detailed tutorial is provided in the `CCCvelo_tutorial.md` (https://github.com/SunXQlab/CCCvelo/blob/main/CCCvelo_tutorial.md), and you can follow it step-by-step to analyze your dataset.
