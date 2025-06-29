@@ -53,10 +53,13 @@ The output files (trained model, velocity vectors, processed AnnData) will be sa
 
 # Demo
 
-We illustrate how to run CCCvelo using a demo dataset step-by-step in the 'Demo' file. The demo dataset can be download from https://www.dropbox.com/s/c5tu4drxda01m0u/mousebrain_bin60.h5ad?dl=0
+We provide a step-by-step demonstration of how to run CCCvelo using a sample dataset, available in the `Demo` directory. The demo dataset can be download from https://www.dropbox.com/s/c5tu4drxda01m0u/mousebrain_bin60.h5ad?dl=0
 
-* ' <br>
+The demonstration includes the following files:
 
+* '0_preprocess_MouseBrain.ipynb' contains the code for preprocessing the raw dataset and exporting formatted inputs for use in R <br>
+* '1_select_LRTG.R' prepares the inputs for CCCvelo model <br>
+* '2_runCCCvelo_on_MouseBrainCortex.ipynb' provides the full pipeline to run CCCvelo on the mouse cortex data <br>
 
 # Application of CCCvelo
 To apply CCCvelo to any other ST datasets:
