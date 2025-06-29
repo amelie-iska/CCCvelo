@@ -14,7 +14,7 @@ The main features of CCCvelo are：
 
 ## Installation
 
-Create a separate conda environment for version control and to avoid potential conflicts. Please install the corresponding version of the package according to the 'requirements.txt', then the package CCCvelo can be directly used.
+Create a separate conda environment for version control and to avoid potential conflicts. Please install the corresponding version of the package according to the `requirements.txt`, then the package CCCvelo can be directly used.
 ```
 conda create -n cccvelo python=3.8.10
 conda activate cccvelo
@@ -38,13 +38,13 @@ data/precessed/
 
 # Demo
 
-We provide a step-by-step demonstration of how to run CCCvelo using a sample dataset, available in the 'Demo' directory. The demo dataset can be download from https://www.dropbox.com/s/c5tu4drxda01m0u/mousebrain_bin60.h5ad?dl=0
+We provide a step-by-step demonstration of how to run CCCvelo using a sample dataset, available in the `Demo` directory. The demo dataset can be download from https://www.dropbox.com/s/c5tu4drxda01m0u/mousebrain_bin60.h5ad?dl=0
 
 The demonstration includes the following files:
 
-* '0_preprocess_MouseBrain.ipynb' contains the code for preprocessing the raw dataset and exporting formatted inputs for use in R <br>
-* '1_select_LRTG.R' prepares the inputs for CCCvelo model <br>
-* '2_runCCCvelo_on_MouseBrainCortex.ipynb' provides the full pipeline to run CCCvelo on the mouse cortex data <br>
+* `0_preprocess_MouseBrain.ipynb` contains the code for preprocessing the raw dataset and exporting formatted inputs for use in R <br>
+* `1_select_LRTG.R` prepares the inputs for CCCvelo model <br>
+* `2_runCCCvelo_on_MouseBrainCortex.ipynb` provides the full pipeline to run CCCvelo on the mouse cortex data <br>
 
 # Application of CCCvelo
 
