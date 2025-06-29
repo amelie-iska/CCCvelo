@@ -38,7 +38,7 @@ data/precessed/
 
 # Demo
 
-We provide a step-by-step demonstration of how to run CCCvelo using a sample dataset, available in the `Demo` directory. The demo dataset can be download from https://www.dropbox.com/s/c5tu4drxda01m0u/mousebrain_bin60.h5ad?dl=0
+We provide a step-by-step demonstration of how to run CCCvelo using a sample dataset, available in the 'Demo' directory. The demo dataset can be download from https://www.dropbox.com/s/c5tu4drxda01m0u/mousebrain_bin60.h5ad?dl=0
 
 The demonstration includes the following files:
 
