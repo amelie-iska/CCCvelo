@@ -36,7 +36,7 @@ data/precessed/
 ├── TGs_list.json # Candidate Target Genes
 ```
 
-# Demo
+# Examples and Reproducibility
 
 We provide a step-by-step demonstration of how to run CCCvelo using a sample dataset, available in the `Demo` directory. The demo dataset can be download from https://www.dropbox.com/s/c5tu4drxda01m0u/mousebrain_bin60.h5ad?dl=0
 
@@ -45,6 +45,11 @@ The demonstration includes the following files:
 * `0_preprocess_MouseBrain.ipynb` contains the code for preprocessing the raw dataset and exporting formatted inputs for use in R <br>
 * `1_select_LRTG.R` prepares the inputs for CCCvelo model <br>
 * `2_runCCCvelo_on_MouseBrainCortex.ipynb` provides the full pipeline to run CCCvelo on the mouse cortex data <br>
+
+Additionally, analysis codes for two more datasets (including human prostate and mousr embryo trunk) can be found in the `CCCvelo_analysis` repository, which includes:
+
+* `analysis_in_HumanProstate` contains the codes for preprocessing the raw dataset and running CCCvelo on the human prostate data <br>
+* `analysis_in_EmbryoTrunk` contains the codes for preprocessing the raw dataset and running CCCvelo on the mousr embryo trunk data <br>
 
 # Application of CCCvelo
 
