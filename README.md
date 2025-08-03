@@ -53,9 +53,7 @@ Additionally, analysis codes for two more datasets (including human prostate and
 
 # Application of CCCvelo
 
-To apply CCCvelo to any other ST datasets:
-
-A detailed tutorial is provided in the `CCCvelo_tutorial.md` (https://github.com/SunXQlab/CCCvelo/blob/main/CCCvelo_tutorial.md), and you can follow it step-by-step to analyze your dataset.
+For application of CCCvelo to any other ST datasets, a detailed tutorial is provided in the `CCCvelo_tutorial.md` (https://github.com/SunXQlab/CCCvelo/blob/main/CCCvelo_tutorial.md), and you can follow it step-by-step to analyze your dataset.
 
 
 
