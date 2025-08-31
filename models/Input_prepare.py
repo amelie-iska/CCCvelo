@@ -4,6 +4,41 @@ import os
 import scanpy as sc
 import scvelo as scv
 import torch
+import warnings
+from scipy.spatial import distance_matrix
+
+# CUDA support
+if torch.cuda.is_available():
+    device = torch.device('cuda')
+else:
+    device = torch.device('cpu')
+warnings.filterwarnings("ignore")
+
+def ReadData(count_file, imput_file, meta_file, loca_file):
+    """
+    create AnnData object.
+
+    Parameters:
+        count_file (str): raw expression data path.
+        imput_file (str): imputation expression data path.
+        meta_file (str): cell mate information data path.
+        loca_file (str): spatial location data path.
+
+    Returns:
+        AnnData: adata.
+    """
+    df_count = pd.read_csv(count_file, index_col=0)
+    df_imput = pd.read_csv(imput_file, index_col=0)
+    df_meta = pd.read_csv(meta_file)
+    df_loca = pd.read_csv(loca_file)
+
+    adata = sc.AnnData(X=df_count.values.astype(np.float64))
+    adata.obs_names = df_count.index
+    adata.var_names = df_count.columns
+    adata.obs['Cluster'] = df_meta['Cluster'].values
+    adata.obsm['spatial'] = df_loca.values.astype(np.float64)
+    adata.layers['Imputate'] = df_imput.values
+    return adata
 
 def PrepareInputData(adata,LR_link_file,TFTG_link_file,LRTF_score_file):
 
@@ -16,10 +51,10 @@ def PrepareInputData(adata,LR_link_file,TFTG_link_file,LRTF_score_file):
     TGs = list(np.unique(TFTG_link['TG'].values))
     ccc_factors = np.unique(np.hstack((Ligs, Recs, TFs, TGs)))
 
-    print('the number of ligands is:', len(np.unique(LR_link['ligand'].values)))
-    print('the number of receptors is:', len(np.unique(LR_link['receptor'].values)))
-    print('the number of TFs is:', len(np.unique(TFTG_link['TF'].values)))
-    print('the number of TGs is:', len(np.unique(TFTG_link['TG'].values)))
+    # print('the number of ligands is:', len(np.unique(LR_link['ligand'].values)))
+    # print('the number of receptors is:', len(np.unique(LR_link['receptor'].values)))
+    # print('the number of TFs is:', len(np.unique(TFTG_link['TF'].values)))
+    # print('the number of TGs is:', len(np.unique(TFTG_link['TG'].values)))
 
     n_gene = adata.shape[1]
     adata.var['ligand'] = np.full(n_gene, False, dtype=bool).astype(int)
@@ -96,7 +131,101 @@ def PrepareInputData(adata,LR_link_file,TFTG_link_file,LRTF_score_file):
 
     return adata
 
+def PrepareData(adata, hidden_dims):
+    TFs_expr = torch.tensor(adata.layers['Imputate'][:, adata.var['TFs'].astype(bool)])
+    TGs_expr = torch.tensor(adata.layers['Imputate'][:, adata.var['TGs'].astype(bool)])
 
+    TGTF_regulate = torch.tensor(adata.varm['TGTF_regulate'])
+    nonzero_idx = torch.nonzero(torch.sum(TGTF_regulate, dim=1)).squeeze()
+    TGTF_regulate = TGTF_regulate[nonzero_idx].float()  # torch.Size([539, 114])
+
+    TFLR_allscore = torch.tensor(adata.obsm['TFLR_signaling_score'])
+
+    # adata = root_cell(adata, select_root)
+    iroot = torch.tensor(adata.uns['iroot'])
+    print('the root cell is:', adata.uns['iroot'])
+
+    N_TGs = TGs_expr.shape[1]
+    layers = hidden_dims
+    layers.insert(0, N_TGs+1)  # 在第一位插入90
+    layers.append(N_TGs)  # 在最后一位追加89
+    data = [TGs_expr, TFs_expr, TFLR_allscore, TGTF_regulate, iroot, layers]
+    return data
+
+def root_cell(adata, select_root):
+
+    if select_root == 'STAGATE':
+        max_cell_for_subsampling = 5000
+        if adata.shape[0] < max_cell_for_subsampling:
+            sub_adata_x = adata.obsm['X_umap']
+            sum_dists = distance_matrix(sub_adata_x, sub_adata_x).sum(axis=1)
+            adata.uns['iroot'] = np.argmax(sum_dists)
+        else:
+            indices = np.arange(adata.shape[0])
+            selected_ind = np.random.choice(indices, max_cell_for_subsampling, False)
+            sub_adata_x = adata.obsm['X_umap'][selected_ind, :]
+            sum_dists = distance_matrix(sub_adata_x, sub_adata_x).sum(axis=1)
+            adata.uns['iroot'] = np.argmax(sum_dists)
+    elif select_root == 'UMAP':
+        adata_copy = adata.copy()
+
+        del adata_copy.obsm['X_umap']
+        del adata_copy.uns['neighbors']
+        del adata_copy.uns['umap']
+        del adata_copy.obsp['distances']
+        del adata_copy.obsp['connectivities']
+
+        sc.tl.pca(adata_copy, svd_solver="arpack")
+        sc.pp.neighbors(adata_copy, n_pcs=50)
+        sc.tl.umap(adata_copy)
+
+        max_cell_for_subsampling = 5000
+        if adata_copy.shape[0] < max_cell_for_subsampling:
+            sub_adata_x = adata_copy.obsm['X_umap']
+            sum_dists = distance_matrix(sub_adata_x, sub_adata_x).sum(axis=1)
+            adata.uns['iroot'] = np.argmax(sum_dists)
+        else:
+            indices = np.arange(adata_copy.shape[0])
+            selected_ind = np.random.choice(indices, max_cell_for_subsampling, False)
+            sub_adata_x = adata_copy.obsm['X_umap'][selected_ind, :]
+            sum_dists = distance_matrix(sub_adata_x, sub_adata_x).sum(axis=1)
+            adata.uns['iroot'] = np.argmax(sum_dists)
+    elif select_root == 'CCC_genes':
+        lig = adata.var['ligand'].astype(bool)
+        rec = adata.var['receptor'].astype(bool)
+        tf = adata.var['TFs'].astype(bool)
+        tg = adata.var['TGs'].astype(bool)
+        combined_bool = lig | rec | tf | tg
+        sub_adata = adata[:, combined_bool]
+        sub_adata = np.unique(sub_adata.var_names)
+        sub_adata = adata[:, sub_adata]
+        max_cell_for_subsampling = 5000
+        if sub_adata.shape[0] < max_cell_for_subsampling:
+            sub_adata_x = sub_adata.layers['Imputate']
+            sum_dists = distance_matrix(sub_adata_x, sub_adata_x).sum(axis=1)
+            adata.uns['iroot'] = np.argmax(sum_dists)
+        else:
+            indices = np.arange(sub_adata.shape[0])
+            selected_ind = np.random.choice(indices, max_cell_for_subsampling, False)
+            sub_adata_x = sub_adata.layers['Imputate'][selected_ind, :]
+            sum_dists = distance_matrix(sub_adata_x, sub_adata_x).sum(axis=1)
+            adata.uns['iroot'] = np.argmax(sum_dists)
+    elif select_root == "spatial":
+        max_cell_for_subsampling = 50000
+        if adata.shape[0] < max_cell_for_subsampling:
+            sub_adata_x = adata.obsm['spatial']
+            sum_dists = distance_matrix(sub_adata_x, sub_adata_x).sum(axis=1)
+            adata.uns['iroot'] = np.argmax(sum_dists)
+        else:
+            indices = np.arange(adata.shape[0])
+            selected_ind = np.random.choice(indices, max_cell_for_subsampling, False)
+            sub_adata_x = adata.obsm['spatial'][selected_ind, :]
+            sum_dists = distance_matrix(sub_adata_x, sub_adata_x).sum(axis=1)
+            adata.uns['iroot'] = np.argmax(sum_dists)
+    elif type(select_root) == int:
+        adata.uns['iroot'] = select_root
+
+    return adata
 
 def PrerocessRealData(count_file,imput_file,meta_file,loca_file,LR_link_file,TFTG_link_file,LRTF_score_file,using_low_emdding):
 
@@ -336,7 +465,7 @@ def save_model_and_data(model, data, path):
     torch.save(data, os.path.join(path, "CCCvelo.pt"))
     # print(f"Model and data saved at: {path}")
 
-def calculate_groundTruth_velo(adata,GWnosie):  # 给定模型中的参数和TF活性，根据模型的公式计算的velocity
+def calculate_groundTruth_velo(adata,GWnosie):  
     adata = adata[:, adata.var['TGs'].astype(bool)]
     regulate = adata.varm['TGTF_regulate']
     y_ode = adata.obsm['groundTruth_TF_activity']
@@ -360,169 +489,6 @@ def calculate_groundTruth_velo(adata,GWnosie):  # 给定模型中的参数和TF�
     # print('the groundTruth_velo is:\n',gd_velo.shape)
     adata.layers['groundTruth_velo'] = gd_velo
     return adata
-
-def calculate_groundTruth_velo_v2(adata):  # gene表达量关于时间的导数，中心差分法
-
-    adata = adata[:, adata.var['TGs'].astype(bool)]
-    TGs_expr = adata.layers['Imputate']
-    gdt_psd = adata.obs['groundTruth_psd']
-    dTG_dt = []
-    for i in range(TGs_expr.shape[1]):
-        TG_expr_i = np.array(TGs_expr[:, i])
-        dTG_dt_i = np.gradient(TG_expr_i, gdt_psd)
-        # print('the shape of dTG_dt_i is:', dTG_dt_i.shape)
-        dTG_dt.append(dTG_dt_i)
-    dTG_dt = np.array(dTG_dt).T
-    adata.layers['groundTruth_velo_with_dG_dt'] = dTG_dt
-
-    return adata
-
-# def calculate_pseudo_velocity(adata, model):
-#     N_cell, N_TGs = adata.shape
-#     regulate = model.regulate
-#     TGs_expr = model.TGs_expr
-#     V2 = model.V2.detach()
-#     K2 = model.K2.detach()
-#     y_gdt = adata.obsm['groundTruth_TF_activity']
-#     velo_raw = torch.zeros((N_cell, N_TGs)).to(device)
-#     for i in range(N_cell):
-#         y_i = y_gdt[i, :]
-#         ym_ = regulate * y_i
-#         tmp1 = V2 * ym_
-#         tmp2 = (K2 + ym_) + (1e-12)
-#         tmp3 = torch.sum(tmp1 / tmp2, dim=1)
-#         dz_dt = tmp3 - TGs_expr[i, :]
-#         velo_raw[i, :] = dz_dt
-#
-#     adata_copy = adata.copy()
-#     adata_copy.layers['pseudo_velocity'] = velo_raw.detach().numpy()
-#     return adata_copy
-
-def pre_velo(y_ode, z, model):
-    regulate = model.regulate
-    V2 = model.V2.detach()
-    K2 = model.K2.detach()
-    # y_ode = self.solve_ym(t)
-    y_i = y_ode
-    ym_ = regulate * y_i
-    tmp1 = V2 * ym_
-    tmp2 = (K2 + ym_) + (1e-12)
-    tmp3 = torch.sum(tmp1 / tmp2, dim=1)
-    dz_dt = tmp3 - z
-    pre_velo = dz_dt
-    return pre_velo
-
-def Jacobian_TFTG(model,isbatch):
-    TGs_expr = model.TGs_expr
-
-    if isbatch:
-       t = model.assign_latenttime(TGs_expr)[1]
-    else:
-        t = model.assign_latenttime()[1]
-
-    y_ode_ = model.solve_ym(t).detach()  # torch.Size([710, 3])
-    y_ode = torch.tensor(y_ode_, requires_grad=True)
-
-    jac = []
-    for i in range(y_ode.shape[0]):
-        y_ode_i = y_ode[i, :]
-        z = model.TGs_expr[i, :]
-        pre_velo_i = pre_velo(y_ode_i, z, model)
-        dv_dy_list = [torch.autograd.grad(pre_velo_i[j], y_ode_i, retain_graph=True)[0] for j in
-                      range(len(pre_velo_i))]
-        dv_dy_i = torch.stack(dv_dy_list)
-        jac.append(dv_dy_i)
-    jac_tensor = torch.stack(jac, dim=0)  # torch.Size([710, 4, 3])
-    regulate_mtx = torch.mean(jac_tensor, dim=0)
-    return jac_tensor
-
-def calculate_y_ode(t, y0, x, Y, model):
-    V1 = model.V1
-    K1 = model.K1
-    x_i = x
-    Y_i = Y
-    t_i = t
-    zero_y = torch.zeros(model.N_TFs, model.N_LRs)
-    V1_ = torch.where(x_i > 0, V1, zero_y)  # torch.Size([88, 63])
-    K1_ = torch.where(x_i > 0, K1, zero_y)  # torch.Size([88, 63])
-    tmp1 = torch.sum((V1_ * x_i) / ((K1_ + x_i) + (1e-12)), dim=1) * Y_i
-    tmp2 = tmp1 * torch.exp(t_i)
-    y_ode = (((y0 + tmp2) * t_i) / 2 + y0) * torch.exp(-t_i)
-    return y_ode
-
-def Jacobian_LRTF(model,isbatch):
-    TGs_expr = model.TGs_expr
-
-    if isbatch:
-        t = model.assign_latenttime(TGs_expr)[1]
-    else:
-        t = model.assign_latenttime()[1]
-    y0 = model.calculate_initial_y0()
-    TFLR_allscore = model.TFLR_allscore
-    TFs_expr = model.TFs_expr
-    x = torch.tensor(TFLR_allscore, requires_grad=True)
-    jac = []
-    for i in range(x.shape[0]):
-        # print(f"========================第{i}个cell===============================")
-        t_i = t[i]
-        x_i = x[i, :, :]
-        Y_i = TFs_expr[i, :]
-        y_ode_i = calculate_y_ode(t_i, y0, x_i, Y_i, model)
-        dy_dx_list = [torch.autograd.grad(y_ode_i[j], x_i, retain_graph=True)[0] for j in
-                      range(len(y_ode_i))]
-        dy_dx_i = torch.stack(dy_dx_list)
-        # print('1.the shape of dy_dx_i is:', dy_dx_i.shape)  # torch.Size([3, 3, 10])
-        dy_dx_i = torch.sum(dy_dx_i, dim=1)
-        # print('2.the shape of dy_dx_i is:', dy_dx_i.shape)  # torch.Size([3, 10])
-        jac.append(dy_dx_i)
-    jac_tensor = torch.stack(jac, dim=0)  # torch.Size([687, 3, 10])
-    return jac_tensor
-
-
-### calculate LRTG regulate matrix for batch training
-def Jacobian_TFTG_batch(model,batch):
-    TGs_expr, TFs_expr, TFLR_allscore = batch
-    t = model.assign_latenttime(TGs_expr)[1]
-    # t = model.assign_latenttime()[1]
-    y_ode_ = model.solve_ym(t).detach()  # torch.Size([710, 3])
-    y_ode = torch.tensor(y_ode_, requires_grad=True)
-
-    jac = []
-    for i in range(y_ode.shape[0]):
-        y_ode_i = y_ode[i, :]
-        z = TGs_expr[i, :]
-        pre_velo_i = pre_velo(y_ode_i, z, model)
-        dv_dy_list = [torch.autograd.grad(pre_velo_i[j], y_ode_i, retain_graph=True)[0] for j in
-                      range(len(pre_velo_i))]
-        dv_dy_i = torch.stack(dv_dy_list)
-        jac.append(dv_dy_i)
-    jac_tensor = torch.stack(jac, dim=0)  # torch.Size([710, 4, 3])
-    regulate_mtx = torch.mean(jac_tensor, dim=0)
-    return jac_tensor
-
-def Jacobian_LRTF_batch(model,batch):
-    TGs_expr, TFs_expr, TFLR_allscore = batch
-    t = model.assign_latenttime(TGs_expr)[1]
-    y0 = model.calculate_initial_y0()
-    TFLR_allscore = TFLR_allscore
-    TFs_expr = TFs_expr
-    x = torch.tensor(TFLR_allscore, requires_grad=True)
-    jac = []
-    for i in range(x.shape[0]):
-        # print(f"========================第{i}个cell===============================")
-        t_i = t[i]
-        x_i = x[i, :, :]
-        Y_i = TFs_expr[i, :]
-        y_ode_i = calculate_y_ode(t_i, y0, x_i, Y_i, model)
-        dy_dx_list = [torch.autograd.grad(y_ode_i[j], x_i, retain_graph=True)[0] for j in
-                      range(len(y_ode_i))]
-        dy_dx_i = torch.stack(dy_dx_list)
-        # print('1.the shape of dy_dx_i is:', dy_dx_i.shape)  # torch.Size([3, 3, 10])
-        dy_dx_i = torch.sum(dy_dx_i, dim=1)
-        # print('2.the shape of dy_dx_i is:', dy_dx_i.shape)  # torch.Size([3, 10])
-        jac.append(dy_dx_i)
-    jac_tensor = torch.stack(jac, dim=0)  # torch.Size([687, 3, 10])
-    return jac_tensor
 
 def calclulate_TFactivity(model,batch):
     TGs_expr, TFs_expr, TFLR_allscore = batch
@@ -554,7 +520,7 @@ def calclulate_TFactivity_v0(model,isbatch):
     if isbatch:
        t = model.assign_latenttime(TGs_expr)[1]
     else:
-        t = model.assign_latenttime()[1]
+        t = model.assign_latenttime(TGs_expr)[1]
 
     y_ode = model.solve_ym(t).detach()  # torch.Size([710, 3])
 
@@ -571,106 +537,119 @@ def calclulate_TFactivity_v0(model,isbatch):
 
     return y_ode,tmp3
 
+def get_raw_velo(adata, model):
 
-# def calculate_initial_y0_(model):
-#     # calculate initial y0
-#     V1 = model.V1
-#     K1 = model.K1
-#     iroot = model.iroot
-#     TFLR_allscore = model.TFLR_allscore
-#     TFs_expr = model.TFs_expr
-#     # calculate initial y0
-#     x0 = TFLR_allscore[iroot,:,:]
-#     Y0 = TFs_expr[iroot,:]
-#     zero_y = torch.zeros(model.N_TFs, model.N_LRs).float()
-#     V1_ = torch.where(x0 > 0, V1, zero_y)  # torch.Size([10, 88, 63])
-#     K1_ = torch.where(x0 > 0, K1, zero_y)  # torch.Size([10, 88, 63])
-#     y0 = torch.sum((V1_ * x0) / ((K1_ + x0) + (1e-12)),dim=1) * Y0  # torch.Size([10, 88])
-#     return y0
-#
-# def hill_fun_(y0, x_i, TFs_expr_i,t_i, model):  # trapezoidal rule approximation
-#     K1 = model.K1.detach()
-#     V1 = model.V1.detach()
-#     # TFLR_allscore = self.TFLR_allscore
-#     Y_i = TFs_expr_i
-#     zero_y = torch.zeros(model.N_TFs, model.N_LRs)
-#     V1_ = torch.where(x_i > 0, V1, zero_y)  # torch.Size([88, 63])
-#     K1_ = torch.where(x_i > 0, K1, zero_y)  # torch.Size([88, 63])
-#     tmp1 = torch.sum((V1_ * x_i) / ((K1_ + x_i) + (1e-12)), dim=1) * Y_i
-#     tmp2 = tmp1 * torch.exp(t_i)
-#     y_i = (((y0 + tmp2)*t_i)/2 + y0) * torch.exp(-t_i)
-#     return y_i
-#
-# def solve_ym_(t_i,x_i, TFs_expr_i,model):
-#     y0_ = calculate_initial_y0_(model)
-#     # N_cell = model.N_cell
-#     # N_TFs = model.N_TFs
-#     y_ode_i = hill_fun_(y0_,x_i,TFs_expr_i,t_i,model)
-#     return y_ode_i
-#
-# def pre_velo_new(t_i, x_i, TFs_expr_i, z_i, model):
-#
-#     V2 = model.V2.detach()
-#     K2 = model.K2.detach()
-#     regulate = model.regulate
-#     y_ode_i = solve_ym_(t_i, x_i, TFs_expr_i,model)
-#     y_ode_i = torch.tensor(y_ode_i, requires_grad=True)
-#     ym_ = regulate * y_ode_i
-#     tmp1 = V2 * ym_
-#     tmp2 = (K2 + ym_) + (1e-12)
-#     tmp3 = torch.sum(tmp1 / tmp2, dim=1)
-#     dz_dt = tmp3 - z_i
-#     pre_velo = dz_dt
-#     return pre_velo
+    N_TGs = model.N_TGs
+    N_TFs = model.N_TFs
+    N_cell = model.N_cell
+    regulate = model.regulate
+    TGs_expr = model.TGs_expr
+    V1 = model.V1.detach()
+    K1 = model.K1.detach()
+    V2 = model.V2.detach()
+    K2 = model.K2.detach()
+    beta = model.beta.detach()
+    gamma = model.gamma.detach()
+    fit_t = model.assign_latenttime(TGs_expr)[1]
+    y_ode = model.solve_ym(fit_t)
+    zero_z = torch.zeros(N_TGs, N_TFs)
+    V2_ = torch.where(regulate == 1, V2, zero_z)
+    K2_ = torch.where(regulate == 1, K2, zero_z)
+    velo_raw = torch.zeros((N_cell, N_TGs)).to(device)
+    for i in range(N_cell):
+        y_i = y_ode[i,:]
+        ym_ = regulate * y_i
+        tmp1 = V2_ * ym_
+        tmp2 = (K2_ + ym_) + (1e-12)
+        tmp3 = torch.sum(tmp1 / tmp2, dim=1)
+        dz_dt = tmp3 - gamma*TGs_expr[i, :]
+        velo_raw[i,:] = dz_dt
 
-# t = model.assign_latenttime()[1]
-# TFLR_allscore = model.TFLR_allscore
-# TFs_expr = model.TFs_expr
-# TGs_expr = model.TGs_expr
-# x = torch.tensor(TFLR_allscore, requires_grad=True)
-# jac = []
-# for i in range(x.shape[0]):
-#     t_i = t[i]
-#     x_i = x[i, :, :]
-#     TFs_expr_i = TFs_expr[i, :]
-#     z_i = TGs_expr[i, :]
-#     pre_velo_i = pre_velo_new(t_i, x_i, TFs_expr_i, z_i, model)
-#
-#     for j in range(len(pre_velo_i)):
-#         # Compute the gradient of each element in pre_velo_i with respect to x_i
-#         pre_velo_ij = pre_velo_i[j]
-#         pre_velo_ij.backward(retain_graph=True)  # Retain the graph for subsequent backward passes
-#
-#         gradient_xij = x_i.grad.clone()  # Clone the gradient to save it
-#         print('The gradient_xij is:\n', gradient_xij)
-#
-#         x_i.grad.zero_()  # Clear gradients for the next iteration
+    velo_norm = (velo_raw - velo_raw.min()) / (velo_raw.max() - velo_raw.min() + 1e-6)
 
+    adata_copy = adata.copy()
+    adata_copy.uns["velo_para"] = {}
+    adata_copy.uns["velo_para"]['fit_V1'] = V1.detach().numpy()
+    adata_copy.uns["velo_para"]['fit_K1'] = K1.detach().numpy()
+    adata_copy.uns["velo_para"]['fit_V2'] = V2.detach().numpy()
+    adata_copy.uns["velo_para"]['fit_K2'] = K2.detach().numpy()
+    adata_copy.obs['fit_t'] = fit_t.detach()
+    adata_copy.layers['velo_raw'] = velo_raw.detach().numpy()
+    adata_copy.layers['velo_norm'] = velo_norm.detach().numpy()
+    adata_copy.layers['velocity'] = adata_copy.layers['velo_raw']
 
-# def Jacobian_LRTG(model):
-#     t = model.assign_latenttime()[1]
-#     TFLR_allscore = model.TFLR_allscore
-#     TFs_expr = model.TFs_expr
-#     TGs_expr = model.TGs_expr
-#     x = torch.tensor(TFLR_allscore, requires_grad=True)
-#
-#     jac = []
-#     for i in range(x.shape[0]):
-#         t_i = t[i]
-#         x_i = x[i,:,:]
-#         TFs_expr_i = TFs_expr[i, :]
-#         z_i = TGs_expr[i, :]
-#         pre_velo_i = pre_velo_new(t_i, x_i, TFs_expr_i, z_i, model)
-#         dv_dx_list = [torch.autograd.grad(pre_velo_i[j], x_i, retain_graph=True)[0] for j in
-#                       range(len(pre_velo_i))]
-#         dv_dx_i = torch.stack(dv_dx_list)
-#         jac.append(dv_dx_i)
-#     jac_tensor = torch.stack(jac, dim=0)  # torch.Size([710, 4, 3])
-#     regulate_mtx = torch.mean(jac_tensor, dim=0)
-#     return regulate_mtx
+    return adata_copy
 
+def get_raw_velo_v2(adata, model):
 
+    N_TGs = model.N_TGs
+    N_TFs = model.N_TFs
+    N_cell = model.N_cell
+    regulate = model.regulate
+    TGs_expr = model.TGs_expr
+    TGs_pred = model.net_f2()[0]
+    V1 = model.V1.detach()
+    K1 = model.K1.detach()
+    V2 = model.V2.detach()
+    K2 = model.K2.detach()
+    fit_t = model.assign_latenttime()[1]
+    y_ode = model.solve_ym(fit_t)
+    print('the shape of y_ode is:', y_ode.shape)
+    velo_raw = torch.zeros((N_cell, N_TGs)).to(device)
+    for i in range(N_cell):
+        y_i = y_ode[i,:]
+        ym_ = regulate * y_i
+        tmp1 = V2 * ym_
+        tmp2 = (K2 + ym_) + (1e-6)
+        tmp3 = torch.sum(tmp1 / tmp2, dim=1)
+        dz_dt = tmp3 - TGs_expr[i, :]
+        velo_raw[i,:] = dz_dt
 
+    loss = torch.mean((TGs_expr - TGs_pred) ** 2,dim=0)
+    velo_norm = (velo_raw - velo_raw.min()) / (velo_raw.max() - velo_raw.min() + 1e-6)
 
+    adata_copy = adata.copy()
+    lig = adata.var['ligand'].astype(bool)
+    rec = adata.var['receptor'].astype(bool)
+    tf = adata.var['TFs'].astype(bool)
+    tg = adata.var['TGs'].astype(bool)
+    combined_bool = lig | rec | tf | tg
+    adata_copy = adata_copy[:, combined_bool]  # genes consist with ligand, receptor, TF, TG
 
+    y_ode_ = torch.zeros((adata_copy.shape))
+    tfs_mask = adata_copy.var['TFs'].astype(bool)
+    tfs_index = tfs_mask[tfs_mask].index
+    tfs_index = [adata_copy.var_names.get_loc(ind) for ind in tfs_index]  # Convert to integer indices
+
+    for i, ind in enumerate(tfs_index):
+        y_ode_[:, ind] = y_ode[:, i]
+
+    # print('the old y_ode shape is:\n', y_ode.shape)
+    # print('the new y_ode_ shape is:\n', y_ode_.shape)
+
+    velo_raw_ = torch.zeros((adata_copy.shape))
+    velo_norm_ = torch.zeros((adata_copy.shape))
+    loss_ = torch.zeros((adata_copy.shape[1],))
+    tgs_mask = adata_copy.var['TGs'].astype(bool)
+    tgs_index = tgs_mask[tgs_mask].index
+    tgs_index = [adata_copy.var_names.get_loc(ind) for ind in tgs_index]  # Convert to integer indices
+
+    for i, ind in enumerate(tgs_index):
+        velo_raw_[:, ind] = velo_raw[:, i]
+        velo_norm_[:, ind] = velo_norm[:, i]
+        loss_[ind] = loss[i]
+
+    adata_copy.uns["velo_para"] = {}
+    adata_copy.uns["velo_para"]['fit_V1'] = V1
+    adata_copy.uns["velo_para"]['fit_K1'] = K1
+    adata_copy.uns["velo_para"]['fit_V2'] = V2
+    adata_copy.uns["velo_para"]['fit_K2'] = K2
+    adata_copy.obs['fit_t'] = fit_t.detach()
+    adata_copy.varm['loss'] = loss_.detach().numpy()
+    adata_copy.layers['TFs_activity'] = y_ode_.detach().numpy()
+    adata_copy.layers['velo_raw'] = velo_raw_.detach().numpy()
+    adata_copy.layers['velo_norm'] = velo_norm_.detach().numpy()
+    adata_copy.layers['velocity'] = adata_copy.layers['velo_raw']
+
+    return adata_copy
 
