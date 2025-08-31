@@ -17,15 +17,14 @@ def create_directory(path):
 def runMLnet(ExprMat, AnnoMat,TGList, LigList, RecList, LigClus = None, RecClus = None, OutputDir = None, Databases = None,
              RecTF_method = "Fisher", TFTG_method = "Fisher", logfc_ct = 0.1, pct_ct = 0.05,
              pval_ct = 0.05, expr_ct = 0.1):
-    # 载入数据库
+
     if Databases is None:
         print("Load default database")
-        # 读取 CSV 文件
+
         LigRecDB = pd.read_csv("E:/CCCvelo/create_MLnet_python/Database/LigRecDB.csv")
         RecTFDB = pd.read_csv("E:/CCCvelo/create_MLnet_python/Database/RecTFDB.csv")
         TFTGDB = pd.read_csv("E:/CCCvelo/create_MLnet_python/Database/TFTGDB.csv")
 
-        # 将 DataFrame 存入字典
         Databases = {
             'LigRec_DB': LigRecDB,
             'RecTF_DB': RecTFDB,
@@ -50,18 +49,15 @@ def runMLnet(ExprMat, AnnoMat,TGList, LigList, RecList, LigClus = None, RecClus 
         Databases['TFTG.DB'] = Databases['TFTG.DB'].loc[
             Databases['TFTG.DB']['source'].isin(Databases['RecTF.DB']['target'])]
 
-    # 创建工作目录
     WorkDir = os.path.join(OutputDir, 'runscMLnet')
     create_directory(WorkDir)
     print(f"WorkDir: {WorkDir}")
 
-    # 检查 LigClus 和 RecClus
     if LigClus is None:
         LigClus = pd.Series(AnnoMat['Cluster'].unique()).astype(str)
     if RecClus is None:
         RecClus = pd.Series(AnnoMat['Cluster'].unique()).astype(str)
 
-    # 输入对象
     inputs = {
         'parameters': {
             'LigClus': pd.Series(LigClus),
@@ -82,10 +78,8 @@ def runMLnet(ExprMat, AnnoMat,TGList, LigList, RecList, LigClus = None, RecClus 
             'ls_ligands': LigList,
             'ls_receptors': RecList
         }
-    }  # 到这里还是正常的
-    # 规范化
+    }  
 
-    # 获取多层网络
     outputs = {'mlnets': {}, 'details': {}}
     for RecClu in inputs['parameters']['RecClus'].values:
         LigClus = inputs['parameters']['LigClus'].values
@@ -190,6 +184,10 @@ def getCellPairMLnet(inputs, ligclu, recclu, databases):
     workdir = os.path.join(workdir, foldername)
     os.makedirs(workdir, exist_ok=True)
     pd.to_pickle(mlnet, os.path.join(workdir, "scMLnet.pkl"))
+
+    for name, df in mlnet.items():
+        csv_path = os.path.join(workdir, f"{name}.csv")
+        df.to_csv(csv_path, index=False)   
 
     # 8. Detail info
     detail = [
@@ -407,8 +405,6 @@ def summarize_multinet(ex_mulnetlist):
 
     return summary
 
-
-# 后续进一步分析的代码，上面的是runMLnet函数涉及的代码
 def extract_MLnet(resMLnet):
     ex_mulnetlist = {}
 
@@ -445,6 +441,7 @@ def extract_MLnet(resMLnet):
     print("The number of TGs is:", mulNet_tab['Target'].nunique())
 
     return ex_mulnetlist
+
 
 
 
