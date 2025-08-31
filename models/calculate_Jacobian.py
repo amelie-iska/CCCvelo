@@ -65,7 +65,6 @@ def Jacobian_LRTF_batch(model,batch):
     x = torch.tensor(TFLR_allscore, requires_grad=True)
     jac = []
     for i in range(x.shape[0]):
-        # print(f"========================第{i}个cell===============================")
         t_i = t[i]
         x_i = x[i, :, :]
         Y_i = TFs_expr[i, :]
@@ -117,7 +116,6 @@ def Jacobian_LRTF(model,isbatch):
     x = torch.tensor(TFLR_allscore, requires_grad=True)
     jac = []
     for i in range(x.shape[0]):
-        # print(f"========================第{i}个cell===============================")
         t_i = t[i]
         x_i = x[i, :, :]
         Y_i = TFs_expr[i, :]
@@ -149,17 +147,16 @@ def calculate_Jacobian(adata_velo,model,path):
     for batch_idx, batch in enumerate(model.dataloader):
         TGs_expr_batch, TFs_expr_batch, TFLR_allscore_batch = [x.to(device) for x in batch]
     
-        jac_TFTG = Jacobian_TFTG_batch(model,batch)  # torch.Size([687, 4, 3])
-        jac_LRTF = Jacobian_LRTF_batch(model,batch)  # torch.Size([687, 3, 10])
-        jac_TFTG = jac_TFTG.float()  # 转换为 float32
-        jac_LRTF = jac_LRTF.float()  # 转换为 float32
-        jac_LRTG = torch.bmm(jac_TFTG, jac_LRTF)  # 批量矩阵相乘
+        jac_TFTG = Jacobian_TFTG_batch(model,batch)  
+        jac_LRTF = Jacobian_LRTF_batch(model,batch)  
+        jac_TFTG = jac_TFTG.float()  
+        jac_LRTF = jac_LRTF.float()  
+        jac_LRTG = torch.bmm(jac_TFTG, jac_LRTF)  
     
         print('the shape of jac_TFTG:', jac_TFTG.shape)
         print('the shape of jac_LRTF:', jac_LRTF.shape)
         print('the shape of jac_LRTG:', jac_LRTG.shape)
     
-        # 存储每行的匹配索引
         matched_indices = []
     
         for i, tf_batch_row in enumerate(TFs_expr_batch):
@@ -168,7 +165,6 @@ def calculate_Jacobian(adata_velo,model,path):
             tf_batch_row = tf_batch_row.float()
             for j, tf_original_row in enumerate(model.TFs_expr):
                 if torch.all(torch.eq(tf_batch_row, tf_original_row)):  
-                    # print(f"================Row {i} in TFs_expr_batch matches with row {j} in TFs_expr.")
                     matched_indices.append((i, j))  
                     match_found = True
                     break
