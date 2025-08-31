@@ -5,8 +5,7 @@ import pandas as pd
 import scanpy as sc
 from scipy.spatial.distance import pdist, squareform
 
-# from models2.preprocess_CCCvelo import *
-from models2.calculateLRscore import *
+from models.calculateLRscore import *
 
 def calculate_y_ode(t, y0, x, Y, model):
     V1 = model.V1
