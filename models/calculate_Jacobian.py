@@ -160,7 +160,6 @@ def calculate_Jacobian(adata_velo,model,path):
         matched_indices = []
     
         for i, tf_batch_row in enumerate(TFs_expr_batch):
-            # 逐行比较 TFs_expr_batch 的每一行
             match_found = False
             tf_batch_row = tf_batch_row.float()
             for j, tf_original_row in enumerate(model.TFs_expr):
