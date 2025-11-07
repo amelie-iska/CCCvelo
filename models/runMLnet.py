@@ -56,14 +56,11 @@ def runMLnet(adata, TGList, LigList, RecList, LigClus = None, RecClus = None, Ou
         }
 
         quan_cutoff = 0.98
-        # 筛选 RecTF.DB：保留 score > 98% 分位的，并去重
         score_threshold = Databases['RecTFDB']['score'].quantile(quan_cutoff)
         rec_tf_df = Databases['RecTFDB']
         Databases['RecTFDB'] = rec_tf_df[rec_tf_df['score'] > score_threshold][['source', 'target']].drop_duplicates()
-        # 筛选 LigRec.DB：去重后，target 要在 RecTF.DB$source 中
         lig_rec_df = Databases['LigRecDB'][['source', 'target']].drop_duplicates()
         Databases['LigRecDB'] = lig_rec_df[lig_rec_df['target'].isin(Databases['RecTFDB']['source'])]
-        # 筛选 TFTG.DB：去重后，source 要在 RecTF.DB$target 中
         tftg_df = Databases['TFTGDB'][['source', 'target']].drop_duplicates()
         Databases['TFTGDB'] = tftg_df[tftg_df['source'].isin(Databases['RecTFDB']['target'])]
 
@@ -91,18 +88,15 @@ def runMLnet(adata, TGList, LigList, RecList, LigClus = None, RecClus = None, Ou
         Databases['TFTGDB'] = Databases['TFTGDB'].loc[
             Databases['TFTGDB']['source'].isin(Databases['RecTFDB']['target'])]
 
-    # 创建工作目录
     WorkDir = os.path.join(OutputDir, 'runscMLnet')
     create_directory(WorkDir)
     print(f"WorkDir: {WorkDir}")
 
-    # 检查 LigClus 和 RecClus
     if LigClus is None:
         LigClus = pd.Series(AnnoMat['Cluster'].unique()).astype(str)
     if RecClus is None:
         RecClus = pd.Series(AnnoMat['Cluster'].unique()).astype(str)
 
-    # 输入对象
     inputs = {
         'parameters': {
             'LigClus': pd.Series(LigClus),
@@ -125,7 +119,6 @@ def runMLnet(adata, TGList, LigList, RecList, LigClus = None, RecClus = None, Ou
         }
     }  
 
-    # 获取多层网络
     outputs = {'mlnets': {}, 'details': {}}
     for RecClu in inputs['parameters']['RecClus'].values:
         LigClus = inputs['parameters']['LigClus'].values
@@ -459,8 +452,6 @@ def summarize_multilayer_network(ex_mulnetlist):
 
     return summary
 
-
-# 后续进一步分析的代码，上面的是runMLnet函数涉及的代码
 def extract_MLnet(resMLnet):
     ex_mulnetlist = {}
 
@@ -497,6 +488,7 @@ def extract_MLnet(resMLnet):
     print("The number of TGs is:", mulNet_tab['Target'].nunique())
 
     return ex_mulnetlist
+
 
 
 
