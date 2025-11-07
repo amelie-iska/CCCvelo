@@ -1,6 +1,6 @@
 import os
-import dfply
-from dfply import *
+# import dfply
+# from dfply import *
 import pickle
 import pandas as pd
 import numpy as np
@@ -14,59 +14,104 @@ def create_directory(path):
         os.makedirs(path)
         print(f"Directory created at: {path}")
         
-def runMLnet(ExprMat, AnnoMat,TGList, LigList, RecList, LigClus = None, RecClus = None, OutputDir = None, Databases = None,
-             RecTF_method = "Fisher", TFTG_method = "Fisher", logfc_ct = 0.1, pct_ct = 0.05,
-             pval_ct = 0.05, expr_ct = 0.1):
+def runMLnet(adata, TGList, LigList, RecList, LigClus = None, RecClus = None, OutputDir = None, Databases = None,
+             RecTF_method = "Fisher", TFTG_method = "Fisher"):
+    """
+    construct multilayer signaling networks.
 
+    Parameters:
+        adata (AnnData): Annotated data object.
+        TGList (dict): feature gene set obtained from exprassion data.
+        LigList (dict): candidate ligand set.
+        RecList (dict): candidate receptor set.
+        LigClu (str): sender cell type.
+        RecClu (str): receiver cell type.
+        OutputDir (str): save result path.
+        Databases (dict): prior database.
+        RecTF_method (str): the method for inferring receptor-TF links, "Fisher" and "Search" for option.
+        TFTG_method (str): the method for inferring TF-TG links, "Fisher" and "Search" for option.
+
+    Returns:
+        dict: the multilayer signaling network of differen cell type pairs.
+    """
+    # prepare data
+    ExprMat = pd.DataFrame(np.log1p(adata.X), index=adata.obs_names, columns=adata.var_names)
+    AnnoMat = pd.DataFrame({
+        "Barcode": adata.obs_names,
+        "Cluster": adata.obs["Cluster"].values
+    })
+
+    # load prior database
     if Databases is None:
         print("Load default database")
-
-        LigRecDB = pd.read_csv("E:/CCCvelo/create_MLnet_python/Database/LigRecDB.csv")
-        RecTFDB = pd.read_csv("E:/CCCvelo/create_MLnet_python/Database/RecTFDB.csv")
-        TFTGDB = pd.read_csv("E:/CCCvelo/create_MLnet_python/Database/TFTGDB.csv")
+    
+        LigRecDB = pd.read_csv("E:/CCCvelo/data/Database/combined_LigRecDB.csv")
+        RecTFDB = pd.read_csv("E:/CCCvelo/data/Database/RecTFDB.csv")
+        TFTGDB = pd.read_csv("E:/CCCvelo/data/Database/TFTGDB.csv")
 
         Databases = {
-            'LigRec_DB': LigRecDB,
-            'RecTF_DB': RecTFDB,
-            'TFTG_DB': TFTGDB
+            'LigRecDB': LigRecDB,
+            'RecTFDB': RecTFDB,
+            'TFTGDB': TFTGDB
         }
 
-        Databases['RecTF_DB'] = Databases['RecTF_DB'][['source', 'target']].drop_duplicates()
-        Databases['LigRec_DB'] = Databases['LigRec_DB'][['source', 'target']].drop_duplicates()
-        Databases['LigRec_DB'] = Databases['LigRec_DB'][
-            Databases['LigRec_DB']['target'].isin(Databases['RecTF_DB']['source'])]
-        Databases['TFTG_DB'] = Databases['TFTG_DB'][['source', 'target']].drop_duplicates()
-        Databases['TFTG_DB'] = Databases['TFTG_DB'][
-            Databases['TFTG_DB']['source'].isin(Databases['RecTF_DB']['target'])]
+        quan_cutoff = 0.98
+        # 筛选 RecTF.DB：保留 score > 98% 分位的，并去重
+        score_threshold = Databases['RecTFDB']['score'].quantile(quan_cutoff)
+        rec_tf_df = Databases['RecTFDB']
+        Databases['RecTFDB'] = rec_tf_df[rec_tf_df['score'] > score_threshold][['source', 'target']].drop_duplicates()
+        # 筛选 LigRec.DB：去重后，target 要在 RecTF.DB$source 中
+        lig_rec_df = Databases['LigRecDB'][['source', 'target']].drop_duplicates()
+        Databases['LigRecDB'] = lig_rec_df[lig_rec_df['target'].isin(Databases['RecTFDB']['source'])]
+        # 筛选 TFTG.DB：去重后，source 要在 RecTF.DB$target 中
+        tftg_df = Databases['TFTGDB'][['source', 'target']].drop_duplicates()
+        Databases['TFTGDB'] = tftg_df[tftg_df['source'].isin(Databases['RecTFDB']['target'])]
+
+        for key, val in Databases.items():
+            if hasattr(val, 'shape'):
+                print(f"{key}: shape = {val.shape}")
+            else:
+                print(f"{key}: type = {type(val)}, length = {len(val)}")
+
+        Databases['RecTFDB'] = Databases['RecTFDB'][['source', 'target']].drop_duplicates()
+        Databases['LigRecDB'] = Databases['LigRecDB'][['source', 'target']].drop_duplicates()
+        Databases['LigRecDB'] = Databases['LigRecDB'][
+            Databases['LigRecDB']['target'].isin(Databases['RecTFDB']['source'])]
+        Databases['TFTGDB'] = Databases['TFTGDB'][['source', 'target']].drop_duplicates()
+        Databases['TFTGDB'] = Databases['TFTGDB'][
+            Databases['TFTGDB']['source'].isin(Databases['RecTFDB']['target'])]
     else:
         print("Load user database")
         for key in Databases:
             Databases[key]=pd.DataFrame(Databases[key])
-        Databases['RecTF.DB']=Databases['RecTF.DB'].drop_duplicates(subset=['source','target'])
-        Databases['LigRec.DB'] = Databases['LigRec.DB'].drop_duplicates(subset=['source', 'target'])
-        Databases['LigRec.DB'] = Databases['LigRec.DB'].loc[Databases['LigRec.DB']['target'].isin(Databases['RecTF.DB']['source'])]
-        Databases['TFTG.DB'] = Databases['TFTG.DB'].drop_duplicates(subset=['source', 'target'])
-        Databases['TFTG.DB'] = Databases['TFTG.DB'].loc[
-            Databases['TFTG.DB']['source'].isin(Databases['RecTF.DB']['target'])]
+        Databases['RecTFDB']=Databases['RecTFDB'].drop_duplicates(subset=['source','target'])
+        Databases['LigRecDB'] = Databases['LigRecDB'].drop_duplicates(subset=['source', 'target'])
+        Databases['LigRecDB'] = Databases['LigRecDB'].loc[Databases['LigRecDB']['target'].isin(Databases['RecTFDB']['source'])]
+        Databases['TFTGDB'] = Databases['TFTGDB'].drop_duplicates(subset=['source', 'target'])
+        Databases['TFTGDB'] = Databases['TFTGDB'].loc[
+            Databases['TFTGDB']['source'].isin(Databases['RecTFDB']['target'])]
 
+    # 创建工作目录
     WorkDir = os.path.join(OutputDir, 'runscMLnet')
     create_directory(WorkDir)
     print(f"WorkDir: {WorkDir}")
 
+    # 检查 LigClus 和 RecClus
     if LigClus is None:
         LigClus = pd.Series(AnnoMat['Cluster'].unique()).astype(str)
     if RecClus is None:
         RecClus = pd.Series(AnnoMat['Cluster'].unique()).astype(str)
 
+    # 输入对象
     inputs = {
         'parameters': {
             'LigClus': pd.Series(LigClus),
             'RecClus': pd.Series(RecClus),
             'WorkDir': WorkDir,
-            'logfc_ct': logfc_ct,
-            'pct_ct': pct_ct,
-            'pval_ct': pval_ct,
-            'expr_ct': expr_ct,
+            # 'logfc_ct': logfc_ct,
+            # 'pct_ct': pct_ct,
+            # 'pval_ct': pval_ct,
+            # 'expr_ct': expr_ct,
             'RecTF_method': RecTF_method,
             'TFTG_method': TFTG_method
         },
@@ -80,6 +125,7 @@ def runMLnet(ExprMat, AnnoMat,TGList, LigList, RecList, LigClus = None, RecClus 
         }
     }  
 
+    # 获取多层网络
     outputs = {'mlnets': {}, 'details': {}}
     for RecClu in inputs['parameters']['RecClus'].values:
         LigClus = inputs['parameters']['LigClus'].values
@@ -103,7 +149,18 @@ def runMLnet(ExprMat, AnnoMat,TGList, LigList, RecList, LigClus = None, RecClus 
 
 # Python version of getCellPairMLnet (no p-value section)
 def getCellPairMLnet(inputs, ligclu, recclu, databases):
-    
+    """
+    construct multilayer signaling networks between different cell type pair.
+
+    Parameters:
+        inputs (dict): include datas for constructing multilayer signaling network.
+        ligclu (str): sender cell type.
+        recclu (str): receiver cell type.
+        databases (dict): prior database.
+
+    Returns: 
+       dict: the multilayer signaling network of sender-receiver cell type pairs.
+    """    
     # 1. Unpack inputs
     df_norm = inputs['data']['df_norm']
     ls_ligands = inputs['data']['ls_ligands']
@@ -114,9 +171,9 @@ def getCellPairMLnet(inputs, ligclu, recclu, databases):
     TFTG_method = inputs['parameters']['TFTG_method']
 
     # 2. Unpack databases
-    LigRec_DB = databases['LigRec_DB']
-    TFTG_DB = databases['TFTG_DB']
-    RecTF_DB = databases['RecTF_DB']
+    LigRec_DB = databases['LigRecDB']
+    TFTG_DB = databases['TFTGDB']
+    RecTF_DB = databases['RecTFDB']
 
     # 3. LigRec
     source_abundant = ls_ligands.get(ligclu, [])
@@ -184,10 +241,6 @@ def getCellPairMLnet(inputs, ligclu, recclu, databases):
     workdir = os.path.join(workdir, foldername)
     os.makedirs(workdir, exist_ok=True)
     pd.to_pickle(mlnet, os.path.join(workdir, "scMLnet.pkl"))
-
-    for name, df in mlnet.items():
-        csv_path = os.path.join(workdir, f"{name}.csv")
-        df.to_csv(csv_path, index=False)   
 
     # 8. Detail info
     detail = [
@@ -371,7 +424,8 @@ def getRecFisherpval(RecTF_DB, Rec_list, TF_list):
     }
     return pd.Series(Recs, name='RecTFpval')
 
-def summarize_multinet(ex_mulnetlist):
+def summarize_multilayer_network(ex_mulnetlist):
+
     mulNet_tab_list = []
 
     for name, mlnet in ex_mulnetlist.items():
@@ -405,6 +459,8 @@ def summarize_multinet(ex_mulnetlist):
 
     return summary
 
+
+# 后续进一步分析的代码，上面的是runMLnet函数涉及的代码
 def extract_MLnet(resMLnet):
     ex_mulnetlist = {}
 
@@ -441,7 +497,6 @@ def extract_MLnet(resMLnet):
     print("The number of TGs is:", mulNet_tab['Target'].nunique())
 
     return ex_mulnetlist
-
 
 
 
