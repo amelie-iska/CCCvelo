@@ -15,21 +15,14 @@ def plot_gene_dynamic_v2(adata, model, plt_path):
     gene_pre = model.net_z()[0]
     gene_pre = torch.where(gene_pre > 0, gene_pre, torch.full_like(gene_pre, 0)).detach()  # 2000*2
 
-    # 主循环，遍历每个基因
     for i in range(gene_pre.shape[1]):
-        # 创建新的绘图窗口
         plt.figure(figsize=(6, 4))
-        # 绘制预测曲线
         lab, = plt.plot(gene_pre[:, i], label=f'Gene {i + 1} Prediction')
-        # 绘制实际观测值的散点图
         plt.scatter(latent_time, gene_obs[:, i], color='red', s=1, label=f'Gene {i + 1} Observation')
-        # 添加标题和坐标轴标签
         plt.title('Gene Dynamics')
         plt.xlabel('Latent Time')
         plt.ylabel('Gene Expression')
-        # 添加图例
         plt.legend(loc='best', fontsize='small')  #  fontsize=10
-        # 保存图像
         plt.savefig(os.path.join(plt_path, f"gene{i + 1}_dynamics_cluster.pdf"), bbox_inches='tight', dpi=200)
         plt.close()
 
@@ -65,7 +58,7 @@ def plot_gene_dynamic(adata, model, save_path):
             plt.scatter(x, y, color=color_scatter[id], s=2)
             # lab, = plt.plot(gene_pre[:, i], c=color[i])
             lab, = plt.plot(gene_pre[:, i],color='blue')
-            if id == 0:  # 只添加一次图例对象
+            if id == 0:  
                 labels_ins.append(lab)
                 labels.append("Gene %s" % (i + 1))
 
@@ -77,7 +70,7 @@ def plot_gene_dynamic(adata, model, save_path):
 def plotLossAdam(loss_adam, save_path):
     torch.save(loss_adam, save_path + "Loss_adam.pt")
     plt.figure(figsize=(10, 4))
-    plt.plot(loss_adam)  # linestyle为线条的风格（共五种）,color为线条颜色
+    plt.plot(loss_adam)  
     # plt.title('Loss of Adam at time %s'%(timepoint+1))
     plt.xlabel('iteration')
     plt.ylabel('loss of Adam')
@@ -160,6 +153,7 @@ def plot_gene_expr_with_latenttime(adata_velo, velo_psd_new, results_path):
         plt.savefig(os.path.join(plt_path, f"gene{i + 1}_dynamics_with_velo_psd.png"), bbox_inches='tight', dpi=200)
         plt.close()
     # print(f"Gene dynamics plots saved at: {plt_path}")
+
 
 
 
