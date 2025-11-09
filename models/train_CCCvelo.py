@@ -38,8 +38,8 @@ def PrepareData(adata, hidden_dims):
 
     N_TGs = TGs_expr.shape[1]
     layers = hidden_dims
-    layers.insert(0, N_TGs+1)  # 在第一位插入90
-    layers.append(N_TGs)  # 在最后一位追加89
+    layers.insert(0, N_TGs+1)  
+    layers.append(N_TGs)  
     data = [TGs_expr, TFs_expr, TFLR_allscore, TGTF_regulate, iroot, layers]
     return data
 
@@ -119,7 +119,6 @@ def root_cell(adata, select_root):
 
     return adata
 
-# +++++++++++++++++++++++++++++++++++++ the deep neural network ++++++++++++++++++++++++++++++++++++++++
 class DNN(torch.nn.Module):
     def __init__(self, layers):
         super(DNN, self).__init__()
@@ -166,23 +165,12 @@ class SpatialVelocity():
 
         self.rootcell_exp = self.TGs_expr[self.iroot, :]
 
-        # setting parameters
-        # self.V1 = torch.empty((self.N_TFs, self.N_LRs), dtype=torch.float32).uniform_(1, 10).float().requires_grad_(True).to(device)
-        # self.K1 = torch.empty((self.N_TFs, self.N_LRs), dtype=torch.float32).uniform_(1, 10).float().requires_grad_(True).to(device)
-        # self.V2 = torch.empty((self.N_TGs, self.N_TFs), dtype=torch.float32).uniform_(1, 10).float().requires_grad_(True).to(device)
-        # self.K2 = torch.empty((self.N_TGs, self.N_TFs), dtype=torch.float32).uniform_(1, 10).float().requires_grad_(True).to(device)
-
         self.V1 = torch.empty((self.N_TFs, self.N_LRs), dtype=torch.float32).uniform_(0, 1).float().requires_grad_(True).to(device)
         self.K1 = torch.empty((self.N_TFs, self.N_LRs), dtype=torch.float32).uniform_(0, 1).float().requires_grad_(True).to(device)
         self.V2 = torch.empty((self.N_TGs, self.N_TFs), dtype=torch.float32).uniform_(0, 1).float().requires_grad_(True).to(device)
         self.K2 = torch.empty((self.N_TGs, self.N_TFs), dtype=torch.float32).uniform_(0, 1).float().requires_grad_(True).to(device)
         self.gamma = torch.empty((self.N_TGs), dtype=torch.float32).uniform_(0, 2).float().requires_grad_(True).to(device)
         self.beta = torch.empty((self.N_TFs), dtype=torch.float32).uniform_(0, 2).float().requires_grad_(True).to(device)
-
-        # self.V1 = torch.empty((self.N_TFs, self.N_LRs), dtype=torch.float32).uniform_(-1, 1).float().requires_grad_(True).to(device)
-        # self.K1 = torch.empty((self.N_TFs, self.N_LRs), dtype=torch.float32).uniform_(-1, 1).float().requires_grad_(True).to(device)
-        # self.V2 = torch.empty((self.N_TGs, self.N_TFs), dtype=torch.float32).uniform_(-1, 1).float().requires_grad_(True).to(device)
-        # self.K2 = torch.empty((self.N_TGs, self.N_TFs), dtype=torch.float32).uniform_(-1, 1).float().requires_grad_(True).to(device)
 
         self.V1 = torch.nn.Parameter(self.V1)
         self.K1 = torch.nn.Parameter(self.K1)
@@ -206,7 +194,7 @@ class SpatialVelocity():
         N_TGs = self.N_TGs
         z0 = self.rootcell_exp.repeat(t.size(0), 1)
         z_and_t = torch.cat([z0, t], dim=1)
-        z_dnn = self.dnn(z_and_t)  # dim = 1 :按行并排
+        z_dnn = self.dnn(z_and_t)  
 
         for i in range(N_TGs):
             z_t_pre = torch.autograd.grad(
@@ -396,7 +384,6 @@ def get_raw_velo(adata, model):
 
     return adata_copy
 
-
 def get_raw_velo_v2(adata, model):
 
     N_TGs = model.N_TGs
@@ -441,9 +428,6 @@ def get_raw_velo_v2(adata, model):
     for i, ind in enumerate(tfs_index):
         y_ode_[:, ind] = y_ode[:, i]
 
-    # print('the old y_ode shape is:\n', y_ode.shape)
-    # print('the new y_ode_ shape is:\n', y_ode_.shape)
-
     velo_raw_ = torch.zeros((adata_copy.shape))
     velo_norm_ = torch.zeros((adata_copy.shape))
     loss_ = torch.zeros((adata_copy.shape[1],))
@@ -469,3 +453,4 @@ def get_raw_velo_v2(adata, model):
     adata_copy.layers['velocity'] = adata_copy.layers['velo_raw']
 
     return adata_copy
+
