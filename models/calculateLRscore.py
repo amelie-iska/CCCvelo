@@ -5,7 +5,7 @@ import pandas as pd
 import pickle
 from collections import defaultdict
 from scipy.spatial.distance import pdist, squareform
-from models2.utils import create_directory 
+from models.utils import create_directory 
 import scipy.sparse as sp
 from scipy.spatial import Delaunay
 from anndata import AnnData
@@ -435,3 +435,4 @@ def save_LRscore_and_MLnet(adata, mulNetList, TFLR_all_score, save_path):
 
     LR_link.to_csv(os.path.join(save_path, 'LR_links.csv'), index=False)
     TFTG_link.to_csv(os.path.join(save_path, 'TFTG_links.csv'), index=False)
+
