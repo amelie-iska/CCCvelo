@@ -100,7 +100,7 @@ class SpatialVelocity():
         N_TGs = self.N_TGs
         z0 = self.rootcell_exp.repeat(t.size(0), 1)
         z_and_t = torch.cat([z0, t], dim=1)
-        z_dnn = self.dnn(z_and_t)  # dim = 1 :按行并排
+        z_dnn = self.dnn(z_and_t)  
 
         for i in range(N_TGs):
             z_t_pre = torch.autograd.grad(
@@ -123,7 +123,7 @@ class SpatialVelocity():
         z_obs = TGs_expr
         # loss_cell_to_t0 = torch.sum((z_dnn.unsqueeze(1) - z_obs.unsqueeze(0)) ** 2, dim=2)  # torch.Size([2000, 2515])
 
-        chunk_size = 500  # 根据内存大小调整这个值
+        chunk_size = 500  
         loss_cell_to_t = []
 
         for i in range(0, z_dnn.size(0), chunk_size):
