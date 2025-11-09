@@ -1,4 +1,3 @@
-#========== 工具函数 ==========
 import os
 import json
 
@@ -11,4 +10,5 @@ def get_index1(lst, item):
 
 def load_json(file_path):
     with open(file_path, "r") as f:
+
         return json.load(f)
